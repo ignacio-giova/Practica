@@ -1,27 +1,28 @@
+import Data.Maybe
+
 data Contacto = CDatos String String String String
 type Tel = Int
 type Agenda = [(Tel, Contacto)]
 
-buscarContacto :: Tel -> Agenda -> Maybe Contacto
-buscarContacto telefono [] = Nothing
-buscarContacto telefono ((t, c):agenda)
-  | t == telefono = Just c
-  | otherwise = buscarContacto telefono agenda
+buscar t [] = Nothing
+buscar t ((t', c):xs)
+  | t == t' = Just c
+  | otherwise = buscar t xs
 
-agregarContacto :: Tel -> Contacto -> Agenda -> Agenda
-agregarContacto t c agenda = (t, c): agenda
+agregar t c xs = (t, c): xs
 
-borrarContacto :: Tel -> Agenda -> Agenda
-borrarContacto telefono [] = []
-borrarContacto telefono ((t, c): agenda)
-  |telefono == t = agenda
-  |otherwise = (t, c) : (borrarContacto telefono agenda)
+borrar t [] = []
+borrar t ((t', c): xs)
+  | t == t' = xs
+  | otherwise = (t', c) : (borrar t xs)
 
-acumulacionClaves:: [(a,b)] -> [(a, [b])]
-acumulacionClaves [] = []
-acumulacionClaves ((k, v):xs) = go k v xs []
+acumulacionClaves:: Eq a => [(a,b)] -> [(a, [b])]
+acumulacionClaves xs = go xs []
   where
-    go k v [] resultado = (k ,[v]) : resultado
-    go k v ((k', v'):xs) resultado
-      |k == k' = go k v xs ((k', v':v) : resultado)
-      |otherwise = go k v xs ((k', [k']) : resultado)
+    go [] resultado = resultado
+    go ((k, v):xs) resultado
+      | isJust (buscar k resultado) =
+        let (Just vs) = buscar k resultado in
+        let resultadoBorrado = borrar k resultado in
+        agregar k (v:vs) resultadoBorrado
+      | otherwise = go xs ((k, [v]) : resultado)
