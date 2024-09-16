@@ -5,6 +5,26 @@ import Prelude hiding (lookup)
 ordenar :: Ord a => [a] -> [a]
 ordenar = Data.List.sort
 
+solucionLibrosPares :: [Int] -> Int
+solucionLibrosPares libros =
+  let n = length libros in
+  let sl = ordenar libros in
+  let slr = reverse sl in
+  maximum (alturas sl slr 0 n)
+  where
+    alturas (x:xs) (y:ys) i n
+      | i == n `div` 2 = []
+      | otherwise = x+y : alturas xs ys (i+1) n
+
+solucionLibros :: [Int] -> Int
+solucionLibros libros =
+  if even (length libros)
+    then solucionLibrosPares libros
+    else
+      let solo = maximum libros in
+      let resto = Data.List.delete solo libros in
+      max solo (solucionLibrosPares resto)
+      
 selectionsort [] = []
 selectionsort l =
     let m = minimum l in
